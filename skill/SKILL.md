@@ -42,6 +42,8 @@ Use when the user provides a current prompt, current output, expected output, an
 
 Compare the current output with the expected output. Identify likely prompt-specification issues separately from possible model limitations. Ask any missing clarification questions, then rewrite the prompt to reduce the observed failure.
 
+After the user answers clarifying questions, always produce a `## Failure Diagnosis` section before the revised prompt. The diagnosis must explain what caused the bad output and why — not just what changed in the rewrite. This is required even when the cause seems obvious.
+
 ## Output Shape
 
 If clarification is still needed, use:
@@ -54,6 +56,17 @@ If clarification is still needed, use:
 ```
 
 After the user answers, or when explicitly drafting with assumptions, use:
+
+For **Diagnose Failed Prompt** only, prepend before the revised prompt:
+
+````markdown
+## Failure Diagnosis
+
+- Root cause: ...
+- Why the model produced the observed output: ...
+````
+
+Then continue with the standard output:
 
 ````markdown
 ## Revised Prompt
