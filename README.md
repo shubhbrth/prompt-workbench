@@ -173,7 +173,8 @@ prompt-workbench/
 │       ├── failure-diagnosis.md
 │       ├── research-sources.md
 │       └── examples.md
-├── skills/                         # companion production skills
+├── skills/                         # all skills (standard discovery location)
+│   ├── prompt-workbench/SKILL.md   # core skill (npx skills discoverable)
 │   ├── prechecks/SKILL.md
 │   ├── mlops-workflow/SKILL.md
 │   └── skill-audit/SKILL.md
