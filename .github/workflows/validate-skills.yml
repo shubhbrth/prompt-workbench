@@ -86,8 +86,8 @@ jobs:
               return 1
             fi
 
-            # Check for placeholder content
-            if grep -qi "TODO\|PLACEHOLDER\|FIXME\|lorem ipsum" "$file"; then
+            # Check for placeholder content (case-sensitive — prose words like "placeholders" are fine)
+            if grep -q "TODO\|PLACEHOLDER\|FIXME\|lorem ipsum" "$file"; then
               echo "  FAIL: file contains placeholder content (TODO/PLACEHOLDER/FIXME/lorem ipsum)"
               return 1
             fi
