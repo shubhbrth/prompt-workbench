@@ -1,0 +1,122 @@
+name: Validate Skills
+
+on:
+  pull_request:
+    paths:
+      - 'skill/**'
+      - 'skills/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'skill/**'
+      - 'skills/**'
+
+jobs:
+  validate-skill-md:
+    name: Validate SKILL.md frontmatter
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Find all SKILL.md files
+        id: find
+        run: |
+          files=$(find skill skills -name "SKILL.md" 2>/dev/null | sort)
+          echo "Found SKILL.md files:"
+          echo "$files"
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$files" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Validate frontmatter fields
+        run: |
+          set -e
+          FAILED=0
+
+          validate_skill() {
+            local file="$1"
+            echo ""
+            echo "Checking: $file"
+
+            # Check file is non-empty
+            if [ ! -s "$file" ]; then
+              echo "  FAIL: file is empty"
+              return 1
+            fi
+
+            # Check frontmatter exists (starts with ---)
+            if ! head -1 "$file" | grep -q "^---"; then
+              echo "  FAIL: missing YAML frontmatter (file must start with ---)"
+              return 1
+            fi
+
+            # Extract frontmatter block
+            frontmatter=$(awk '/^---/{if(++c==2)exit} c' "$file")
+
+            # Check required fields
+            if ! echo "$frontmatter" | grep -q "^name:"; then
+              echo "  FAIL: missing required field 'name'"
+              return 1
+            fi
+
+            if ! echo "$frontmatter" | grep -q "^description:"; then
+              echo "  FAIL: missing required field 'description'"
+              return 1
+            fi
+
+            # Check name is non-empty
+            name_value=$(echo "$frontmatter" | grep "^name:" | sed 's/^name: *//')
+            if [ -z "$name_value" ]; then
+              echo "  FAIL: 'name' field is empty"
+              return 1
+            fi
+
+            # Check description is non-empty
+            desc_value=$(echo "$frontmatter" | grep "^description:" | sed 's/^description: *//')
+            if [ -z "$desc_value" ]; then
+              echo "  FAIL: 'description' field is empty"
+              return 1
+            fi
+
+            # Check for placeholder content
+            if grep -qi "TODO\|PLACEHOLDER\|FIXME\|lorem ipsum" "$file"; then
+              echo "  FAIL: file contains placeholder content (TODO/PLACEHOLDER/FIXME/lorem ipsum)"
+              return 1
+            fi
+
+            echo "  PASS: name='$name_value'"
+            return 0
+          }
+
+          # Find and validate all SKILL.md files
+          while IFS= read -r -d '' file; do
+            if ! validate_skill "$file"; then
+              FAILED=$((FAILED + 1))
+            fi
+          done < <(find skill skills -name "SKILL.md" -print0 2>/dev/null)
+
+          echo ""
+          if [ "$FAILED" -gt 0 ]; then
+            echo "FAILED: $FAILED SKILL.md file(s) did not pass validation."
+            exit 1
+          else
+            echo "All SKILL.md files passed validation."
+          fi
+
+      - name: Check skills-lock.json consistency (if present)
+        run: |
+          if [ -f "skills-lock.json" ]; then
+            echo "Checking skills-lock.json..."
+            # Validate it is valid JSON
+            python3 -m json.tool skills-lock.json > /dev/null && echo "  PASS: skills-lock.json is valid JSON"
+          else
+            echo "No skills-lock.json found — skipping lock file check."
+          fi

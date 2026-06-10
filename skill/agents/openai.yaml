@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prompt Workbench"
+  short_description: "Guided prompt refinement helper"
+  default_prompt: "Use $prompt-workbench to improve this prompt after asking clarifying questions."
