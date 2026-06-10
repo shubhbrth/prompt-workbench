@@ -81,8 +81,10 @@ npx skills add shubhbrth/prompt-workbench@skill-audit      # production hygiene 
 
 **3. Verify everything installed correctly:**
 ```bash
-npx skills check
+npx skills list
 ```
+
+> **Note:** `npx skills check` has known bugs in v1.5.10 on Windows (shorthand clone failure and unquoted path in subprocess). Use `npx skills add` to manually update skills until a fix is released.
 
 ---
 
