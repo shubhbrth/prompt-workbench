@@ -219,30 +219,31 @@ The skill always asks clarifying questions before producing a revised prompt —
 
 ## Usage Examples
 
-The examples below show the same three workflows in both Codex and Claude Code so you can see how the skill behaves in each runtime.
+The examples below show the same three workflows in both Codex and Claude Code. The scenario: a developer building an AI-powered customer support feature.
 
 ---
 
 ### Workflow 1: Create a prompt from an idea
 
-You have a goal but no prompt yet.
+You need a system prompt for a chatbot but have nothing written yet.
 
 #### In Codex
 
 ```
-> Use prompt-workbench. I want a prompt that summarizes meeting notes into action items.
+> Use prompt-workbench. I need a system prompt for a customer support chatbot
+> that handles refund requests for a SaaS product.
 ```
 
-The skill responds with clarifying questions:
+The skill asks clarifying questions before writing anything:
 
 ```
 ## Clarifying Questions
 
-1. Who reads the action items — just you, or a team in a shared doc?
-2. Should the output group items by owner, deadline, or topic?
-3. How long are the meeting notes typically — a few bullet points or several paragraphs?
-4. Is any tool involved (Notion, Jira, email)? Should the format match it?
-5. Should the prompt include a placeholder for the meeting notes, or will you paste them inline?
+1. Should the bot resolve refunds autonomously, or escalate to a human agent after gathering info?
+2. What refund policy rules must the bot enforce — time limit, eligibility criteria, exceptions?
+3. What tone: formal and professional, or friendly and conversational?
+4. Does the bot have access to order/account data, or does it need to ask the user for it?
+5. What should the bot do when a request falls outside the refund policy?
 ```
 
 After you answer, Codex produces:
@@ -250,25 +251,28 @@ After you answer, Codex produces:
 ```
 ## Revised Prompt
 
-You are a meeting assistant. Summarize the following meeting notes into a list of action items.
+You are a customer support assistant for {{product_name}}. Your role is to help
+customers with refund requests according to the policy below.
 
-For each action item include:
-- Owner (the person responsible)
-- Task (what needs to be done, one sentence)
-- Deadline (if mentioned; otherwise write "not specified")
+Refund policy:
+{{refund_policy}}
 
-Format the output as a markdown table. Do not include discussion or context — only decisions and tasks.
-
-Meeting notes:
-{{meeting_notes}}
+Instructions:
+- Greet the customer and ask for their order ID if not already provided.
+- Check whether the request is within 30 days of purchase and for an eligible plan.
+- If eligible: confirm the refund and provide a reference number.
+- If ineligible: explain the reason clearly and offer an alternative (credit, extension).
+- Do not process refunds for accounts with open fraud flags — escalate to a human agent.
+- Keep responses under 100 words. Use a professional but empathetic tone.
 
 ## Comments
-- Separated owner/task/deadline because the user needs to assign items to teammates.
-- Added "not specified" fallback so the table stays consistent even when deadlines are missing.
-- Used a placeholder {{meeting_notes}} so the prompt is reusable.
+- Separated policy from instructions so the policy can be updated without rewriting the prompt.
+- Added explicit escalation rule for fraud flags — the model cannot infer this from context.
+- Used {{product_name}} and {{refund_policy}} placeholders so the prompt is reusable across products.
 
 ## Source Basis
-- Structured output guidance: Anthropic prompting docs — separating task from format instructions reduces hallucination risk.
+- Instruction/data separation: Anthropic prompting docs — mixing policy rules with instructions
+  increases the chance the model blends or ignores them.
 ```
 
 ---
@@ -276,37 +280,41 @@ Meeting notes:
 #### In Claude Code
 
 ```
-> /prompt-workbench I want a prompt that summarizes meeting notes into action items.
+> /prompt-workbench I need a system prompt for a customer support chatbot
+> that handles refund requests for a SaaS product.
 ```
 
-The skill behaves identically — same clarifying questions, same output structure. The `/prompt-workbench` slash command triggers the skill in Claude Code.
+Same clarifying questions, same output structure. The `/prompt-workbench` slash command triggers the skill in Claude Code.
 
 ---
 
 ### Workflow 2: Improve an existing prompt
 
-You already have a prompt but it is not working well enough.
+You already have a system prompt but the bot gives inconsistent answers.
 
 #### In Codex
 
 ```
 > Use prompt-workbench to improve this prompt:
-> "Summarize this text."
+>
+> "You are a helpful assistant. Answer customer questions about our product
+>  and help them with any issues they have."
 ```
 
-The skill identifies weaknesses first:
+The skill identifies weaknesses before rewriting:
 
 ```
-I can see a few issues before I rewrite:
-- No goal stated — summarize for what purpose?
-- No output format — bullet points, paragraph, one sentence?
-- No length constraint — the model will guess
-- No audience — tone and depth are unclear
+I can see several issues before I rewrite:
+- No role boundary — "any issues" is unbounded, the model will attempt anything
+- No tone or length guidance — responses will vary in style and length
+- No escalation path — the model will guess when to hand off to a human
+- No product context — the model has no basis for accurate answers
 
 ## Clarifying Questions
-1. What is the summary used for — a quick skim, a report, an email?
-2. Should it be a single sentence, a short paragraph, or bullet points?
-3. Who is the reader — yourself, a colleague, a non-technical stakeholder?
+1. What topics should the bot handle, and what should it explicitly decline?
+2. Should it ever transfer to a human agent — if so, under what conditions?
+3. What is the target response length: concise (1–3 sentences) or detailed?
+4. Is there a knowledge base or documentation the bot should reference?
 ```
 
 After you answer, the rewritten prompt:
@@ -314,17 +322,26 @@ After you answer, the rewritten prompt:
 ```
 ## Revised Prompt
 
-Summarize the following text for a non-technical stakeholder.
-Write 3–5 bullet points. Each bullet should be one sentence.
-Focus on decisions and outcomes — omit background and technical detail.
+You are a customer support assistant for {{product_name}}. You help customers
+with billing questions, account access, and plan changes.
 
-Text:
-{{text}}
+Scope:
+- Answer questions about billing, subscriptions, and account settings.
+- Do not provide legal, security, or engineering advice — redirect to the relevant team.
+- If the customer is frustrated or the issue is unresolved after two exchanges, offer to
+  connect them with a human agent.
+
+Use a friendly, concise tone. Keep responses under 80 words unless the customer asks
+for more detail.
 
 ## Comments
-- Added audience ("non-technical stakeholder") so tone and vocabulary adjust automatically.
-- Specified bullet format and count to prevent open-ended responses.
-- "Decisions and outcomes" replaces vague "summarize" — gives the model a clear filter.
+- Added explicit scope so the model knows what to decline, not just what to help with.
+- Defined the escalation trigger (two unresolved exchanges) rather than leaving it to judgment.
+- Length constraint prevents verbose responses that frustrate support customers.
+
+## Source Basis
+- Scope constraints reduce off-topic responses: Anthropic prompting docs — tell the model
+  what not to do as explicitly as what to do.
 ```
 
 ---
@@ -332,7 +349,9 @@ Text:
 #### In Claude Code
 
 ```
-> /prompt-workbench improve this: "Summarize this text."
+> /prompt-workbench improve this:
+> "You are a helpful assistant. Answer customer questions about our product
+>  and help them with any issues they have."
 ```
 
 Same output. Claude Code loads the skill from `skill/SKILL.md` and runs the same improvement workflow.
@@ -341,48 +360,59 @@ Same output. Claude Code loads the skill from `skill/SKILL.md` and runs the same
 
 ### Workflow 3: Diagnose a failed prompt
 
-Your prompt is producing wrong output and you need to understand why.
+Your code generation prompt keeps producing Python 2 syntax instead of Python 3.
 
 #### In Codex
 
 ```
 > Use prompt-workbench to diagnose this.
 >
-> Current prompt: "Write a SQL query for the sales data."
-> Current output: SELECT * FROM sales WHERE date > '2024-01-01'
-> Expected output: A query that joins sales with customers and filters by region.
+> Current prompt: "Write a Python function that reads a CSV file and returns
+>                  a list of rows where the status column equals 'active'."
+> Current output: Uses `print "done"`, `unicode()`, and opens files without encoding param.
+> Expected output: Python 3 syntax — f-strings, open() with encoding="utf-8", print().
 ```
 
-The skill diagnoses:
+The skill asks clarifying questions before diagnosing:
+
+```
+## Clarifying Questions
+
+1. Which model are you sending this to — does it default to Python 2 examples in training?
+2. Should the function handle large files (streaming) or is loading into memory acceptable?
+3. What CSV library should it use: stdlib `csv`, `pandas`, or no preference?
+4. Should the function raise errors on missing columns, or silently skip them?
+```
+
+After you answer, the skill diagnoses and rewrites:
 
 ```
 ## Failure Diagnosis
 
-The prompt is missing two things the model cannot infer:
-1. Schema context — it does not know that a `customers` table exists or how it joins to `sales`.
-2. Filter intent — "sales data" does not communicate that region filtering is needed.
-
-The model defaulted to the simplest valid query it could construct from the prompt alone.
+The prompt does not specify a Python version. When unspecified, some models default to
+Python 2-compatible syntax — especially for file I/O and print statements, where Python 2
+patterns are common in training data.
 
 ## Revised Prompt
 
-Write a SQL query using the following schema:
-- Table: sales (id, customer_id, amount, date, region)
-- Table: customers (id, name, region, account_manager)
+Write a Python 3.8+ function that reads a CSV file and returns a list of rows where
+the `status` column equals "active".
 
 Requirements:
-- Join sales to customers on customer_id = customers.id
-- Filter by region: {{region}}
-- Return: customer name, total sales amount, date
-- Order by total sales amount descending
+- Use the stdlib `csv` module.
+- Open the file with `encoding="utf-8"`.
+- Return a list of dicts (one per matching row).
+- Raise a `ValueError` if the `status` column is not present in the header.
+- Use type hints for the function signature.
 
 ## Comments
-- Added schema so the model knows what tables and columns exist.
-- Made the join condition explicit — the model cannot infer foreign keys from table names alone.
-- Added {{region}} placeholder so the prompt is reusable across regions.
+- Added "Python 3.8+" so the model cannot fall back to Python 2 patterns.
+- Specified `encoding="utf-8"` explicitly — omitting it causes platform-dependent behavior.
+- Added error handling requirement so the model does not silently swallow missing columns.
 
 ## Source Basis
-- Missing context is the most common cause of hallucinated SQL (Anthropic prompting docs — provide all facts the model cannot look up).
+- Version pinning prevents training-data ambiguity: models trained on mixed Python 2/3 corpora
+  default to older syntax when the version is unspecified (observed pattern, not guaranteed).
 ```
 
 ---
@@ -391,12 +421,12 @@ Requirements:
 
 ```
 > /prompt-workbench diagnose:
-> prompt: "Write a SQL query for the sales data."
-> output: SELECT * FROM sales WHERE date > '2024-01-01'
-> expected: query joining sales with customers, filtered by region
+> prompt: "Write a Python function that reads a CSV file and returns rows where status = active."
+> output: Uses Python 2 syntax — print statement, unicode(), no encoding param.
+> expected: Python 3 — f-strings, open() with encoding, print function.
 ```
 
-Claude Code runs the same diagnosis. If you have web search enabled in your Claude Code session, the skill can also pull in current SQL prompting guidance from external sources and cite it in the Source Basis section.
+Same diagnosis workflow. If web search is enabled in your Claude Code session, the skill can pull current Python best-practice references and cite them in the Source Basis section.
 
 ---
 
@@ -440,6 +470,7 @@ The workflow and output are the same in both runtimes — only the invocation di
 - ✅ CI validation for all SKILL.md files on every PR
 
 ### Planned
+- 📋 Prompt role intake — ask whether the user needs a system prompt, user prompt, or both before drafting
 - 📋 Expanded prompt pattern reference (structured output, reasoning prompts, few-shot)
 - 📋 Failure diagnosis reference with common failure types and rewrites
 - 📋 Web search integration for live evidence retrieval
