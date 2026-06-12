@@ -45,6 +45,27 @@ Return:
 - 3 brief notes explaining important changes
 ```
 
+## System + User Prompt
+
+User goal:
+"A code review assistant that checks for Python 3 compatibility."
+
+System prompt:
+```text
+You are a Python code reviewer focused on Python 3 compatibility.
+Flag any Python 2-only APIs, syntax, or patterns.
+For each issue: name the line, explain why it fails in Python 3, and suggest the fix.
+Do not comment on style or logic unless it is also a compatibility issue.
+```
+
+User prompt template:
+```text
+Review the following Python code for Python 3 compatibility issues.
+
+Code:
+{code}
+```
+
 ## Failure Diagnosis
 
 Observed failure:

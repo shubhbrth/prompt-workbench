@@ -4,6 +4,11 @@ Use the smallest useful subset. Prefer 3-7 questions for ambiguous requests and 
 
 ## Prompt Creation
 
+0. What kind of prompt do you need?
+   - **System prompt** — sets the model's persona, behavior, and constraints once; not repeated per request
+   - **User prompt** — the per-request message the model receives each time; often uses placeholders
+   - **Both** — a full prompt architecture: system sets context, user carries the variable input
+
 1. What should the model accomplish?
 2. Who is the output for?
 3. What input will the model receive each time?

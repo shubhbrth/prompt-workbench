@@ -468,9 +468,9 @@ The workflow and output are the same in both runtimes — only the invocation di
 - ✅ Adapters for Codex, Claude Code, Gemini CLI, Aider, and generic AGENTS.md
 - ✅ Companion skills: prechecks, mlops-workflow, skill-audit
 - ✅ CI validation for all SKILL.md files on every PR
+- ✅ Prompt role intake — asks whether you need a system prompt, user prompt, or both before drafting
 
 ### Planned
-- 📋 Prompt role intake — ask whether the user needs a system prompt, user prompt, or both before drafting
 - 📋 Expanded prompt pattern reference (structured output, reasoning prompts, few-shot)
 - 📋 Failure diagnosis reference with common failure types and rewrites
 - 📋 Web search integration for live evidence retrieval

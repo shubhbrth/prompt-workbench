@@ -28,7 +28,10 @@ Use a concise coaching tone. Avoid claiming that a prompt is best, optimal, or g
 
 Use when the user has a goal but no prompt.
 
-Ask about the task, audience, inputs, constraints, desired output format, and any examples. Then draft a reusable prompt with placeholders for repeated use.
+Ask about prompt role first (system, user, or both) — see `references/intake-questions.md` Q0. Then ask about the task, audience, inputs, constraints, desired output format, and any examples. Draft accordingly:
+- System prompt only: persona, behavior rules, output constraints, no per-request placeholders
+- User prompt only: task instruction + placeholders for variable inputs
+- Both: draft each section separately, clearly labeled
 
 ### Improve Existing Prompt
 
@@ -56,6 +59,13 @@ If clarification is still needed, use:
 ```
 
 After the user answers, or when explicitly drafting with assumptions, use:
+
+For **Create From Idea** and **Improve Existing Prompt**, label the output section based on role:
+
+- System prompt only → use `## System Prompt`
+- User prompt only → use `## User Prompt Template`
+- Both → use two consecutive sections: `## System Prompt` then `## User Prompt Template`
+- Role not specified and cannot be inferred → use `## Revised Prompt` and note the assumption
 
 For **Diagnose Failed Prompt** only, prepend before the revised prompt:
 
