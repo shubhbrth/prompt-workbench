@@ -21,6 +21,7 @@ Use a concise coaching tone. Avoid claiming that a prompt is best, optimal, or g
 6. Add concise comments explaining the most important changes.
 7. State assumptions instead of silently inventing missing requirements.
 8. Add runtime notes only when the user's target runtime affects how the prompt should be used.
+9. After producing the output, self-assess the draft for: non-trivial assumptions made, undefined `{placeholders}`, open-ended output format, pattern-sensitive tasks without examples, or a critical absent constraint. If any apply, append `## Follow-Up` (see Output Shape). Skip when none apply or when the user said "draft with assumptions" or "no more questions".
 
 ## Task Modes
 
@@ -101,6 +102,29 @@ Then continue with the standard output:
 
 - ...
 ````
+
+`## Follow-Up` is appended **after** the closing of the standard output block above — it is not inside the template. Append it when triggered (see step 9):
+
+````markdown
+## Follow-Up
+
+To verify my understanding:        ← include only if verification questions exist
+- [one question per non-obvious assumption — max 2]
+
+To improve the prompt:             ← include only if improvement questions exist
+- [one question per open-ended area that could be tightened — max 2]
+````
+
+Only include a sub-header when that category has at least one question. Never render an empty sub-header.
+
+**Triggers** (append if any are true):
+- `## Assumptions` is non-empty
+- Draft contains `{placeholders}` the user never defined
+- Output format is open-ended (no structure, length, or shape specified)
+- No examples in the draft but task is pattern-sensitive (classification, tone, style)
+- A critical constraint is absent whose omission would likely cause wrong output (e.g. no error handling for a required edge case, no exclusion for a known failure mode)
+
+Each question must be actionable — the user's answer should directly change something in the prompt. Do not repeat questions already asked in `## Clarifying Questions`.
 
 Omit `Runtime Notes` when there are no runtime-specific concerns. Keep the source basis short and honest; "Bundled prompt-workbench notes; source not externally verified" is acceptable for phase 1 when no better source is available.
 

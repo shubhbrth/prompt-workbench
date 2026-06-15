@@ -469,6 +469,7 @@ The workflow and output are the same in both runtimes — only the invocation di
 - ✅ Companion skills: prechecks, mlops-workflow, skill-audit
 - ✅ CI validation for all SKILL.md files on every PR
 - ✅ Prompt role intake — asks whether you need a system prompt, user prompt, or both before drafting
+- ✅ Conditional follow-up questions — after drafting, asks targeted questions to verify assumptions and tighten open-ended areas
 
 ### Planned
 - 📋 Expanded prompt pattern reference (structured output, reasoning prompts, few-shot)
