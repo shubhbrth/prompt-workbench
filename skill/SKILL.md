@@ -17,7 +17,7 @@ Use a concise coaching tone. Avoid claiming that a prompt is best, optimal, or g
 2. Restate the understood goal in one sentence when the user gave only a rough idea.
 3. Ask the minimum useful clarification questions. Use `references/intake-questions.md` when the task is ambiguous.
 4. Check source basis before making important prompt-design claims. Use `references/research-sources.md`; use accessible public sources only when needed and available.
-5. Rewrite or draft the prompt with reusable placeholders such as `{audience}`, `{input}`, `{constraints}`, `{examples}`, or `{output_format}`.
+5. Rewrite or draft the prompt with reusable placeholders such as `{audience}`, `{input}`, `{constraints}`, `{examples}`, or `{output_format}`. When variants are requested, draft 2–3 versions that differ across a meaningful dimension (tone, structure, specificity, output format, persona, or length) — not just wording. See Output Shape for the variants template. When role is Both and variants are requested, ask which role to vary before drafting (see Create From Idea) — never produce a full system+user pair per variant.
 6. Add concise comments explaining the most important changes.
 7. State assumptions instead of silently inventing missing requirements.
 8. Add runtime notes only when the user's target runtime affects how the prompt should be used.
@@ -29,10 +29,12 @@ Use a concise coaching tone. Avoid claiming that a prompt is best, optimal, or g
 
 Use when the user has a goal but no prompt.
 
-Ask about prompt role first (system, user, or both) — see `references/intake-questions.md` Q0. Then ask about the task, audience, inputs, constraints, desired output format, and any examples. Draft accordingly:
+Ask about prompt role first (system, user, or both) and delivery format (single or variants) — see `references/intake-questions.md` Q0a and Q0b. Then ask about the task, audience, inputs, constraints, desired output format, and any examples. Draft accordingly:
 - System prompt only: persona, behavior rules, output constraints, no per-request placeholders
 - User prompt only: task instruction + placeholders for variable inputs
 - Both: draft each section separately, clearly labeled
+
+**Hard rule — role=Both AND delivery=Variants:** before drafting anything, you MUST ask which role to vary: "Which role should I vary — the system prompt (different personas/constraints) or the user prompt template (different structures/formats)? I'll keep the other fixed." Never infer or skip this question. Never produce multiple complete system+user pairs (one full pair per variant) — that shape is explicitly disallowed. The correct shape is: the fixed role's output once, then 2–3 variants of only the chosen role.
 
 ### Improve Existing Prompt
 
@@ -102,6 +104,66 @@ Then continue with the standard output:
 
 - ...
 ````
+
+When variants are requested, replace the single prompt block with:
+
+````markdown
+## Variant A — [label, e.g. "Concise / open-ended"]
+
+```text
+[prompt]
+```
+
+**Tradeoff:** [one sentence — what this gains vs what it sacrifices]
+
+---
+
+## Variant B — [label, e.g. "Structured / prescriptive"]
+
+```text
+[prompt]
+```
+
+**Tradeoff:** [one sentence]
+
+---
+
+## Variant C — [label] ← only if a third adds real value
+
+```text
+[prompt]
+```
+
+**Tradeoff:** [one sentence]
+
+---
+
+## Comments
+[shared design decisions across all variants]
+
+## Source Basis / Assumptions
+[same as single-prompt mode]
+
+## Follow-Up
+- Would you like more variants, or should I refine one of these? If refining, which variant and what to change?
+````
+
+For **Both + Variants**, output the fixed role once above all variants, then vary the chosen role across variant blocks. This is the only valid output shape for Both + Variants — do not output a complete system+user pair inside each variant block:
+
+````markdown
+## System Prompt (shared across all variants)
+```text
+[fixed system prompt]
+```
+
+## Variant A — User Prompt: [label]
+```text
+[user prompt template]
+```
+**Tradeoff:** ...
+````
+
+`## Follow-Up` in variants mode **always** includes the refine/more-variants question — it is not conditional.
 
 `## Follow-Up` is appended **after** the closing of the standard output block above — it is not inside the template. Append it when triggered (see step 9):
 

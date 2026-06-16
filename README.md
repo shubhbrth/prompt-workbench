@@ -215,7 +215,10 @@ The skill always asks clarifying questions before producing a revised prompt —
 ## Source Basis
 ## Runtime Notes
 ## Assumptions
+## Follow-Up          ← conditional: only when assumptions or open areas exist
 ```
+
+When you request variants, `## Revised Prompt` is replaced with labeled `## Variant A / B / C` blocks, each with a one-line tradeoff note, and `## Follow-Up` always asks whether to refine one or see more.
 
 ## Usage Examples
 
@@ -470,12 +473,12 @@ The workflow and output are the same in both runtimes — only the invocation di
 - ✅ CI validation for all SKILL.md files on every PR
 - ✅ Prompt role intake — asks whether you need a system prompt, user prompt, or both before drafting
 - ✅ Conditional follow-up questions — after drafting, asks targeted questions to verify assumptions and tighten open-ended areas
+- ✅ Multi-variant prompt generation — request 2–3 versions with tradeoff notes, then pick or combine
 
 ### Planned
 - 📋 Expanded prompt pattern reference (structured output, reasoning prompts, few-shot)
 - 📋 Failure diagnosis reference with common failure types and rewrites
 - 📋 Web search integration for live evidence retrieval
-- 📋 Multi-variant prompt generation on request
 - 📋 Prompt safety and injection-defense workflow
 - 📋 Non-English prompt support
 
